@@ -1,0 +1,10 @@
+{
+  "name": "sorcery-tracker",
+  "private": true,
+  "type": "module",
+  "engines": { "node": ">=24" },
+  "scripts": {
+    "start": "node server/index.ts",
+    "dev": "node --watch server/index.ts"
+  }
+}

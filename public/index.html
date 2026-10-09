@@ -1,0 +1,138 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Sorcery Tracker</title>
+  <link rel="stylesheet" href="/style.css">
+  <script type="module" src="/app.js"></script>
+</head>
+<body>
+  <header class="top">
+    <h1>Sorcery Tracker</h1>
+    <nav id="sets" class="tabs" aria-label="Sets"></nav>
+    <div class="actions">
+      <label class="btn">Import CSV<input id="import" type="file" accept=".csv,text/csv" hidden></label>
+      <a class="btn" href="/api/export.csv">Export CSV</a>
+      <button id="sync" class="btn">Sync to Curiosa</button>
+    </div>
+  </header>
+
+  <section class="toolbar">
+    <div class="bar">
+      <div class="ctl"><span class="lbl">View</span>
+        <div class="seg" id="view" role="group" aria-label="View">
+          <button data-v="cards" class="on">Cards</button>
+          <button data-v="missing">Missing</button>
+        </div>
+      </div>
+      <div id="card-layout" class="bar-group">
+        <div class="ctl"><span class="lbl">Layout</span>
+          <div class="seg" id="layout" role="group" aria-label="Layout">
+            <button data-v="grid">Grid</button>
+            <button data-v="3x3">Binder 3×3</button>
+            <button data-v="4x3">Binder 4×3</button>
+          </div>
+        </div>
+        <div class="ctl"><span class="lbl">Quick edit</span>
+          <div class="seg" id="quick" role="group" aria-label="Quick edit">
+            <button data-v="">Off</button>
+            <button data-v="Standard">Standard</button>
+            <button data-v="Foil">Foil</button>
+          </div>
+        </div>
+        <label class="ctl sort"><span class="lbl">Sort</span>
+          <select id="sort">
+            <option value="name">Name</option>
+            <option value="element">Element, then name</option>
+            <option value="type">Type, then name</option>
+            <option value="rarity">Rarity, then name</option>
+            <option value="cost">Cost, then name</option>
+          </select>
+        </label>
+      </div>
+      <div id="missing-filters" class="bar-group" hidden>
+        <div class="ctl"><span class="lbl">Complete with</span>
+          <div class="seg" id="mode" role="group" aria-label="Missing mode">
+            <button data-v="any" class="on">Any treatment</button>
+            <button data-v="foil">Every foil</button>
+          </div>
+        </div>
+        <button id="copy-missing" class="btn">Copy list</button>
+        <a id="dl-missing" class="btn">Download .txt</a>
+      </div>
+    </div>
+
+    <div id="card-filters" class="filter-panel">
+      <span class="lbl">Search</span>
+      <div class="frow">
+        <input id="search" type="search" placeholder="Name or rules text…">
+        <div class="seg" id="owned" role="group" aria-label="Ownership">
+          <button data-v="" class="on">All cards</button>
+          <button data-v="owned">Owned</button>
+          <button data-v="unowned">Not owned</button>
+        </div>
+        <button id="clear-filters" class="btn clear">Clear filters</button>
+      </div>
+      <span class="lbl">Type</span>
+      <div class="chips" id="types" aria-label="Card type"></div>
+      <span class="lbl">Rarity</span>
+      <div class="chips" id="rarities" aria-label="Rarity"></div>
+      <span class="lbl">Element</span>
+      <div class="frow">
+        <div class="seg" id="elcount" role="group" aria-label="Element count">
+          <button data-v="" class="on">Any</button>
+          <button data-v="none">None</button>
+          <button data-v="single">Single</button>
+          <button data-v="multi">Multi</button>
+        </div>
+        <span class="vsep" aria-hidden="true"></span>
+        <div class="chips" id="elements" aria-label="Element"></div>
+      </div>
+    </div>
+
+    <div class="statsbar">
+      <p id="stats" class="stats"></p>
+      <label class="min-price" title="Only cards at or above this price count towards collection worth">
+        Count value of cards ≥ €<input id="min-price" type="number" min="0" step="0.5" placeholder="0">
+      </label>
+    </div>
+  </section>
+
+  <main>
+    <div id="grid" class="grid"></div>
+    <div id="binder-config" class="binder-config" hidden></div>
+    <div id="binder" class="binder" hidden></div>
+    <div id="missing" hidden></div>
+  </main>
+
+  <dialog id="detail">
+    <button class="close" aria-label="Close" onclick="this.closest('dialog').close()">×</button>
+    <div id="detail-body"></div>
+  </dialog>
+  <dialog id="sync-dialog">
+    <button class="close" aria-label="Close" onclick="this.closest('dialog').close()">×</button>
+    <h2>Sync to Curiosa</h2>
+    <div id="sync-login" hidden>
+      <p>Paste your session cookie from sorcerytcg.com. It is stored only in this app's <code>data/</code> folder.</p>
+      <ol class="muted">
+        <li>Log in on sorcerytcg.com and open DevTools (F12) → Network.</li>
+        <li>Reload the page, click any request to <code>/api/trpc/…</code>.</li>
+        <li>Under Request Headers, copy the full value of <code>Cookie</code>.</li>
+      </ol>
+      <textarea id="cookie" rows="4" placeholder="name=value; other=value…"></textarea>
+      <p><button id="save-cookie" class="btn primary">Connect</button></p>
+    </div>
+    <div id="sync-main" hidden>
+      <p class="muted">Your local collection is the source of truth: Curiosa quantities are set to match it.
+        Alpha printings on Curiosa are never touched.</p>
+      <p>
+        <button id="sync-preview" class="btn primary">Compare with Curiosa</button>
+        <button id="sync-logout" class="btn">Disconnect</button>
+      </p>
+      <div id="sync-result"></div>
+    </div>
+  </dialog>
+  <div id="toast" role="status"></div>
+</body>
+</html>
