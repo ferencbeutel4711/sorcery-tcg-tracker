@@ -6,7 +6,7 @@ import { getBinderLayouts, getCollection, replaceCollection, setBinderLayout, se
 import { exportCuriosaCsv, importCuriosaCsv } from "./csv.ts";
 import { applySync, clearCookie, CuriosaError, getCookie, planSync, saveCookie } from "./curiosa.ts";
 import { loadPrices, type PriceDb } from "./prices.ts";
-import { missingAsText, missingForSet, type MissingMode } from "./missing.ts";
+import { missingAsCardmarket, missingAsText, missingForSet, type MissingMode } from "./missing.ts";
 
 const PORT = Number(process.env.PORT ?? 3000);
 const PUBLIC_DIR = new URL("../public", import.meta.url).pathname;
@@ -89,7 +89,9 @@ async function handleApi(req: IncomingMessage, res: ServerResponse, url: URL) {
     const mode = (url.searchParams.get("mode") === "foil" ? "foil" : "any") as MissingMode;
     if (!cards.sets.includes(set)) return json(res, { error: "Unknown set" }, 404);
     const result = missingForSet(cards, getCollection(), prices.prices, set, mode);
-    if (url.searchParams.get("format") !== "txt") return json(res, result);
+    const format = url.searchParams.get("format");
+    if (format === "cardmarket") return send(res, 200, missingAsCardmarket(result), "text/plain; charset=utf-8");
+    if (format !== "txt") return json(res, result);
     return send(res, 200, missingAsText(result), "text/plain; charset=utf-8", {
       "Content-Disposition": `attachment; filename="missing-${set.replaceAll(" ", "-").toLowerCase()}-${mode}.txt"`,
     });

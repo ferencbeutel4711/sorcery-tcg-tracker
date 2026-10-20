@@ -515,13 +515,18 @@ function bindEvents() {
 
   bindSync();
 
-  $("#copy-missing").addEventListener("click", async () => {
+  const copyMissing = async (format, message) => {
     const href = $("#dl-missing").getAttribute("href");
     if (!href) return;
-    const text = await (await fetch(href)).text();
+    const text = await (await fetch(href.replace("format=txt", `format=${format}`))).text();
     await navigator.clipboard.writeText(text);
-    toast("Missing list copied");
-  });
+    toast(message);
+  };
+  $("#copy-missing").addEventListener("click", () => copyMissing("txt", "Missing list copied"));
+  $("#copy-cardmarket").addEventListener("click", () =>
+    copyMissing("cardmarket", state.mode === "foil"
+      ? "Copied — paste into Cardmarket Wants → Add Deck List, then mark the entries as foil"
+      : "Copied — paste into Cardmarket Wants → Add Deck List"));
 }
 
 // ---- Curiosa sync -------------------------------------------------------------

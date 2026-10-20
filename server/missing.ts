@@ -62,3 +62,13 @@ export function missingAsText({ set, mode, total, missing, cost, unpriced }: Ret
   );
   return [title, summary, "", ...lines, ""].join("\n");
 }
+
+/**
+ * Cardmarket's wants-list "Add Deck List" import: one "<qty> <name>" per line, nothing else.
+ * It can't express foil or treatment, so foil-mode gaps of one card collapse into a single line.
+ */
+export function missingAsCardmarket({ missing }: ReturnType<typeof missingForSet>): string {
+  const counts = new Map<string, number>();
+  for (const m of missing) counts.set(m.card, (counts.get(m.card) ?? 0) + 1);
+  return [...counts].map(([name, qty]) => `${qty} ${name}`).join("\n") + "\n";
+}
